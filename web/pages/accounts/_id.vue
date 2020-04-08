@@ -3,75 +3,23 @@
     <div class="container" v-if="loading">loading...</div>
 
     <div class="container" v-if="!loading">
-      <b-card :header="'Welcome, ' + account.name" class="mt-3">
-        <b-card-text>
-          <div>
-            Account: <code>{{ account.id }}</code>
-          </div>
-          <div>
-            Balance:
-            <code
-              >{{ account.currency === "usd" ? "$" : "€"
-              }}{{ account.balance }}</code
-            >
-          </div>
-        </b-card-text>
-        <b-button size="sm" variant="success" @click="show = !show"
-          >New payment</b-button
-        >
+      <account-info
+        v-on:toggle-show="toggleShow"
+        :account="account"
+        :currencySign="currencySign"
+      />
 
-        <b-button
-          class="float-right"
-          variant="danger"
-          size="sm"
-          nuxt-link
-          to="/"
-          >Logout</b-button
-        >
-      </b-card>
+      <new-payment
+        v-show="show"
+        v-on:update-data="updateData"
+        v-on:set-loading="setLoading"
+      />
 
-      <b-card class="mt-3" header="New Payment" v-show="show">
-        <b-form @submit="onSubmit">
-          <b-form-group id="input-group-1" label="To:" label-for="input-1">
-            <b-form-input
-              id="input-1"
-              size="sm"
-              v-model="payment.to"
-              type="number"
-              required
-              placeholder="Destination ID"
-            ></b-form-input>
-          </b-form-group>
-
-          <b-form-group id="input-group-2" label="Amount:" label-for="input-2">
-            <b-input-group prepend="$" size="sm">
-              <b-form-input
-                id="input-2"
-                v-model="payment.amount"
-                type="number"
-                required
-                placeholder="Amount"
-              ></b-form-input>
-            </b-input-group>
-          </b-form-group>
-
-          <b-form-group id="input-group-3" label="Details:" label-for="input-3">
-            <b-form-input
-              id="input-3"
-              size="sm"
-              v-model="payment.details"
-              required
-              placeholder="Payment details"
-            ></b-form-input>
-          </b-form-group>
-
-          <b-button type="submit" size="sm" variant="primary">Submit</b-button>
-        </b-form>
-      </b-card>
-
-      <b-card class="mt-3" header="Payment History">
-        <b-table striped hover :items="transactions"></b-table>
-      </b-card>
+      <transactions-list
+        :data="transactions"
+        :accountId="account.id"
+        :currencySign="currencySign"
+      />
     </div>
   </div>
 </template>
@@ -79,118 +27,59 @@
 <script lang="ts">
 import Vue from "vue";
 
+import AccountInfo from "~/pages/accounts/AccountInfo";
+import NewPayment from "~/pages/accounts/NewPayment";
+import TransactionsList from "~/pages/accounts/TransactionsList";
+
+// TODO: add types
 export default Vue.extend({
+  components: { AccountInfo, NewPayment, TransactionsList },
   data() {
     return {
-      show: false,
-      payment: {},
-
       account: null,
       transactions: null,
-
+      show: false,
       loading: true
     };
   },
 
+  asyncData({ params: { id }, $axios }) {
+    return $axios.get(`accounts/${id}`).then(({ data: account }) => ({
+      account
+    }));
+  },
+
   mounted() {
-    const that = this;
+    const {
+      $route: {
+        params: { id }
+      }
+    } = this;
 
-    this.$axios
-      .get(`accounts/${this.$route.params.id}`)
-      .then(function(response) {
-        if (!response.data.length) {
-          window.location = "/";
-        } else {
-          that.account = response.data[0];
+    this.$axios.get(`accounts/${id}/transactions`).then(({ data }) => {
+      this.transactions = data;
 
-          if (that.account && that.transactions) {
-            that.loading = false;
-          }
-        }
-      });
+      if (this.account && this.transactions) {
+        this.setLoading(false);
+      }
+    });
+  },
 
-    this.$axios
-      .get(
-        `accounts/${
-          that.$route.params.id
-        }/transactions`
-      )
-      .then(function(response) {
-        that["transactions"] = response.data;
-
-        var transactions = [];
-        for (let i = 0; i < that.transactions.length; i++) {
-          that.transactions[i].amount =
-            (that.account.currency === "usd" ? "$" : "€") +
-            that.transactions[i].amount;
-
-          if (that.account.id != that.transactions[i].to) {
-            that.transactions[i].amount = "-" + that.transactions[i].amount;
-          }
-
-          transactions.push(that.transactions[i]);
-        }
-
-        that.transactions = transactions;
-
-        if (that.account && that.transactions) {
-          that.loading = false;
-        }
-      });
+  computed: {
+    currencySign() {
+      return this.account.currency === "usd" ? "$" : "€";
+    }
   },
 
   methods: {
-    onSubmit(evt) {
-      var that = this;
-
-      evt.preventDefault();
-
-      this.$axios.post(
-        `accounts/${this.$route.params.id}/transactions`,
-
-        this.payment
-      );
-
-      that.payment = {};
-      that.show = false;
-
-      // update items
-      setTimeout(() => {
-        this.$axios
-          .get(`accounts/${this.$route.params.id}`)
-          .then(function(response) {
-            if (!response.data.length) {
-              window.location = "/";
-            } else {
-              that.account = response.data[0];
-            }
-          });
-
-        this.$axios
-          .get(
-            `http://localhost:8000/api/accounts/${
-              that.$route.params.id
-            }/transactions`
-          )
-          .then(function(response) {
-            that["transactions"] = response.data;
-
-            var transactions = [];
-            for (let i = 0; i < that.transactions.length; i++) {
-              that.transactions[i].amount =
-                (that.account.currency === "usd" ? "$" : "€") +
-                that.transactions[i].amount;
-
-              if (that.account.id != that.transactions[i].to) {
-                that.transactions[i].amount = "-" + that.transactions[i].amount;
-              }
-
-              transactions.push(that.transactions[i]);
-            }
-
-            that.transactions = transactions;
-          });
-      }, 200);
+    toggleShow() {
+      this.show = !this.show;
+    },
+    updateData() {
+      // TODO: add update data logic
+    },
+    setLoading(value: boolean) {
+      this.loading = value;
     }
   }
 });
