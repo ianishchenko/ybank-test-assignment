@@ -77,10 +77,9 @@
 </template>
 
 <script lang="ts">
-import axios from "axios";
 import Vue from "vue";
 
-export default {
+export default Vue.extend({
   data() {
     return {
       show: false,
@@ -96,8 +95,8 @@ export default {
   mounted() {
     const that = this;
 
-    axios
-      .get(`http://localhost:8000/api/accounts/${this.$route.params.id}`)
+    this.$axios
+      .get(`accounts/${this.$route.params.id}`)
       .then(function(response) {
         if (!response.data.length) {
           window.location = "/";
@@ -110,9 +109,9 @@ export default {
         }
       });
 
-    axios
+    this.$axios
       .get(
-        `http://localhost:8000/api/accounts/${
+        `accounts/${
           that.$route.params.id
         }/transactions`
       )
@@ -146,10 +145,8 @@ export default {
 
       evt.preventDefault();
 
-      axios.post(
-        `http://localhost:8000/api/accounts/${
-          this.$route.params.id
-        }/transactions`,
+      this.$axios.post(
+        `accounts/${this.$route.params.id}/transactions`,
 
         this.payment
       );
@@ -159,8 +156,8 @@ export default {
 
       // update items
       setTimeout(() => {
-        axios
-          .get(`http://localhost:8000/api/accounts/${this.$route.params.id}`)
+        this.$axios
+          .get(`accounts/${this.$route.params.id}`)
           .then(function(response) {
             if (!response.data.length) {
               window.location = "/";
@@ -169,7 +166,7 @@ export default {
             }
           });
 
-        axios
+        this.$axios
           .get(
             `http://localhost:8000/api/accounts/${
               that.$route.params.id
@@ -196,5 +193,5 @@ export default {
       }, 200);
     }
   }
-};
+});
 </script>

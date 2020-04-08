@@ -19,7 +19,7 @@ Route::get('accounts/{id}', function ($id) {
              ->whereRaw("id=$id")
              ->get();
 
-    return $account;
+    return ['data' =>  $account];
 });
 
 Route::get('accounts/{id}/transactions', function ($id) {
@@ -27,7 +27,7 @@ Route::get('accounts/{id}/transactions', function ($id) {
              ->whereRaw("`from`=$id OR `to`=$id")
              ->get();
 
-    return $account;
+    return ['data' =>  $account];
 });
 
 Route::post('accounts/{id}/transactions', function (Request $request, $id) {
