@@ -2,7 +2,7 @@
   <div>
     <div class="container" v-if="loading">loading...</div>
 
-    <div class="container" v-if="!loading">
+    <div class="container" v-show="!loading">
       <account-info
         v-on:toggle-show="toggleShow"
         :account="account"
@@ -11,7 +11,9 @@
 
       <new-payment
         v-show="show"
+        :accountId="id"
         v-on:update-data="updateData"
+        v-on:toggle-show="toggleShow"
         v-on:set-loading="setLoading"
       />
 
@@ -38,11 +40,18 @@ export default Vue.extend({
   components: { AccountInfo, NewPayment, TransactionsList },
 
   data() {
+    const {
+      $route: {
+        params: { id }
+      }
+    } = this;
+
     return {
       account: {} as Account,
       transactions: [] as Array<Transaction>,
       show: false as boolean,
-      loading: true as boolean
+      loading: true as boolean,
+      id: +id as number
     };
   },
 
@@ -53,13 +62,7 @@ export default Vue.extend({
   },
 
   mounted() {
-    const {
-      $route: {
-        params: { id }
-      }
-    } = this;
-
-    this.$axios.get(`accounts/${id}/transactions`).then(({ data }) => {
+    this.$axios.get(`accounts/${this.id}/transactions`).then(({ data }) => {
       this.transactions = data;
 
       this.setLoading(false);
@@ -77,7 +80,16 @@ export default Vue.extend({
       this.show = !this.show;
     },
     updateData() {
-      // TODO: add update data logic
+      this.setLoading(true);
+
+      Promise.all([
+        this.$axios.get(`accounts/${this.id}`).then(({ data: account }) => ({
+          account
+        })),
+        this.$axios.get(`accounts/${this.id}/transactions`).then(({ data }) => {
+          this.transactions = data;
+        })
+      ]).finally(() => this.setLoading(false));
     },
     setLoading(value: boolean) {
       this.loading = value;

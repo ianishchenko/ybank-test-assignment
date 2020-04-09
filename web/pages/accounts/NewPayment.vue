@@ -1,5 +1,17 @@
 <template>
   <b-card class="mt-3" header="New Payment">
+    <p v-if="errors.length">
+      <b>Please correct the following error(s):</b>
+      <b-list-group flush>
+        <b-list-group-item
+          variant="danger"
+          v-for="error in errors"
+          v-bind:key="error"
+        >
+          {{ error }}
+        </b-list-group-item>
+      </b-list-group>
+    </p>
     <b-form v-on:submit.prevent="onSubmit">
       <b-form-group id="input-group-1" label="To:" label-for="input-1">
         <b-form-input
@@ -40,34 +52,70 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import Vue, { PropOptions } from "vue";
 
 import Payment from "~/types/payment";
 
-// TODO: add validations
 export default Vue.extend({
+  props: {
+    accountId: {
+      type: Number,
+      required: true
+    } as PropOptions<number>
+  },
+
   data() {
-    return { payment: {} as Payment };
+    return { payment: {} as Payment, errors: [] as Array<string> };
   },
 
   methods: {
     onSubmit() {
-      this.$emit("set-loading", true);
+      const errors = this.getErrors();
 
-      this.$axios
-        .post(`accounts/${this.$route.params.id}/transactions`, this.payment)
-        .then(
-          () => {
-            // dont need to set loading to false. it will be done in "update-data" event to prevent twinkle of loader
-            this.payment = {};
-            this.$emit("toggle-show");
-            this.$emit("update-data");
-          },
-          error => {
-            this.$emit("set-loading", false);
-            // errors handling if it needs in future
-          }
-        );
+      if (!errors.length) {
+        this.$emit("set-loading", true);
+
+        this.$axios
+          .post(`accounts/${this.accountId}/transactions`, this.payment)
+          .then(
+            () => {
+              // dont need to set loading to false. it will be done in "update-data" event to prevent twinkle of loader
+              this.payment = {};
+              this.$emit("toggle-show");
+              this.$emit("update-data");
+            },
+            error => {
+              this.$emit("set-loading", false);
+              // errors handling if it needs in future
+            }
+          );
+      } else {
+        this.errors = errors;
+      }
+    },
+    getErrors() {
+      const { to, amount, details } = this.payment;
+      const errors = [];
+
+      if (!to) {
+        errors.push("You should specify recipient");
+      } else if (+to === this.accountId) {
+        errors.push("You cannot specify yourself");
+      }
+
+      if (!amount) {
+        errors.push("You should specify amount");
+      } else if (Number.isNaN(amount)) {
+        errors.push("You should enter valid number value");
+      } else if (amount <= 0) {
+        errors.push("Amount should be greater than 0");
+      }
+
+      if (!details) {
+        errors.push("You should specify details");
+      }
+
+      return errors;
     }
   }
 });
