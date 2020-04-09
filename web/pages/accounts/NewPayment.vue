@@ -42,28 +42,32 @@
 <script lang="ts">
 import Vue from "vue";
 
+import Payment from "~/types/payment";
+
 // TODO: add validations
 export default Vue.extend({
   data() {
-    return { payment: {} };
+    return { payment: {} as Payment };
   },
 
   methods: {
     onSubmit() {
       this.$emit("set-loading", true);
 
-      this.$axios.post(
-        `accounts/${this.$route.params.id}/transactions`,
-        this.payment
-      ).then(() => {
-        // dont need to set loading to false. it will be done in "update-data" event to prevent twinkle of loader
-        this.payment = {};
-        this.$emit("toggle-show");
-        this.$emit("update-data");
-      }, error => {
-        this.$emit("set-loading", false);
-        // errors handling if it needs in future
-      });
+      this.$axios
+        .post(`accounts/${this.$route.params.id}/transactions`, this.payment)
+        .then(
+          () => {
+            // dont need to set loading to false. it will be done in "update-data" event to prevent twinkle of loader
+            this.payment = {};
+            this.$emit("toggle-show");
+            this.$emit("update-data");
+          },
+          error => {
+            this.$emit("set-loading", false);
+            // errors handling if it needs in future
+          }
+        );
     }
   }
 });

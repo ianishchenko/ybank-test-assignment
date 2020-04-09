@@ -27,19 +27,22 @@
 <script lang="ts">
 import Vue from "vue";
 
-import AccountInfo from "~/pages/accounts/AccountInfo";
-import NewPayment from "~/pages/accounts/NewPayment";
-import TransactionsList from "~/pages/accounts/TransactionsList";
+import Account from "~/types/account";
+import Transaction from "~/types/transaction";
 
-// TODO: add types
+import AccountInfo from "./AccountInfo.vue";
+import NewPayment from "./NewPayment.vue";
+import TransactionsList from "./TransactionsList.vue";
+
 export default Vue.extend({
   components: { AccountInfo, NewPayment, TransactionsList },
+
   data() {
     return {
-      account: null,
-      transactions: null,
-      show: false,
-      loading: true
+      account: {} as Account,
+      transactions: [] as Array<Transaction>,
+      show: false as boolean,
+      loading: true as boolean
     };
   },
 
@@ -59,14 +62,12 @@ export default Vue.extend({
     this.$axios.get(`accounts/${id}/transactions`).then(({ data }) => {
       this.transactions = data;
 
-      if (this.account && this.transactions) {
-        this.setLoading(false);
-      }
+      this.setLoading(false);
     });
   },
 
   computed: {
-    currencySign() {
+    currencySign(): string {
       return this.account.currency === "usd" ? "$" : "€";
     }
   },

@@ -5,28 +5,28 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import Vue, { PropOptions } from "vue";
+
+import Transaction from "~/types/transaction";
 
 export default Vue.extend({
   props: {
     data: {
       type: Array,
       default: []
-    },
+    } as PropOptions<Array<Transaction>>,
     currencySign: {
-      type: String
-    },
+      type: String,
+      required: true
+    } as PropOptions<String>,
     accountId: {
-      type: Number
-    }
+      type: Number,
+      required: true
+    } as PropOptions<Number>
   },
 
-  // TODO: add fields config
-  fields: [],
-
   computed: {
-    items() {
-      // TODO: add types
+    items(): Array<Transaction> {
       return this.data.map(transaction => {
         const sign: string = this.accountId != transaction.to ? "-" : "";
         const amount: string = `${sign}${this.currencySign}${transaction.amount}`;

@@ -20,18 +20,24 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import Vue, { PropOptions } from 'vue'
+
+import Account from "~/types/account";
 
 export default Vue.extend({
   props: {
     account: {
-      type: Object
-    },
-    currencySign: String
+      type: Object,
+      required: true
+    } as PropOptions<Account>,
+    currencySign: {
+      type: String,
+      required: true
+    } as PropOptions<String>
   },
 
   data() {
-    return { show: false };
+    return { show: false as boolean };
   },
 
   methods: {

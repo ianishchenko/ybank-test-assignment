@@ -1,9 +1,8 @@
-import Vue from "vue";
 import { AxiosResponse, AxiosError, AxiosInstance } from "axios";
 
-import AxiosInterface from "./types";
+import Axios from "~/types/axios";
 
-export default function(Vue: AxiosInterface, inject?: any): void {
+export default function(Vue: Axios, inject?: any): void {
   const { $axios, redirect } = Vue;
 
   $axios.defaults.baseURL = process.env.API_URL;
@@ -38,6 +37,12 @@ export default function(Vue: AxiosInterface, inject?: any): void {
 
 declare module "vue/types/vue" {
   interface Vue {
+    $axios: AxiosInstance;
+  }
+}
+
+declare module '@nuxt/types' {
+  interface Context {
     $axios: AxiosInstance;
   }
 }

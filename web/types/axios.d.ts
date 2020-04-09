@@ -1,6 +1,6 @@
 import { AxiosStatic } from "axios";
 
-export default interface AxiosInterface {
+export default interface Axios {
   $axios: AxiosStatic;
   redirect: (url: string) => void;
 }
