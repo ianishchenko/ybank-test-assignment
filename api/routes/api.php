@@ -20,9 +20,4 @@ Route::get('accounts/{id}/transactions', 'AccountController@getRelatedTransactio
 
 Route::post('accounts/{id}/transactions', 'AccountController@storeTransaction');
 
-Route::get('currencies', function () {
-    $account = DB::table('currencies')
-              ->get();
-
-    return $account;
-});
+Route::get('currencies', 'CurrencyController@index');

@@ -24,9 +24,9 @@ class AccountRepository extends BaseRepository implements
     /**
      * @param  int  $fromId
      * @param  int  $toId
-     * @param  int  $amount
+     * @param  float  $amount is usd
      */
-    public function updateBalance(int $fromId, int $toId, int $amount): void
+    public function updateBalance(int $fromId, int $toId, float $amount): void
     {
         $from = $this->find($fromId);
         $to = $this->find($toId);

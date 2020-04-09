@@ -10,7 +10,7 @@ use App\Services\TransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class AccountController
+class AccountController extends Controller
 {
     /**
      * @var AccountRepository
@@ -66,10 +66,11 @@ class AccountController
      * @param  int  $id
      * @return array
      * @throws ValidationException
+     * @throws \Exception
      */
     public function storeTransaction(Request $request, int $id): array
     {
-        $data = $request->post();
+        $data = array_merge(['from' => $id], $request->post());
         $this->transactionService->validateTransaction($id, $data);
 
         return [

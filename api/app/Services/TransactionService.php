@@ -28,16 +28,24 @@ class TransactionService
     protected $transactionRepository;
 
     /**
+     * @var CurrencyService
+     */
+    private $currencyService;
+
+    /**
      * TransactionService constructor.
      * @param  AccountRepositoryInterface  $accountRepository
      * @param  TransactionRepositoryInterface  $transactionRepository
+     * @param  CurrencyService  $currencyService
      */
     public function __construct(
         AccountRepositoryInterface $accountRepository,
-        TransactionRepositoryInterface $transactionRepository
+        TransactionRepositoryInterface $transactionRepository,
+        CurrencyService $currencyService
     ) {
         $this->accountRepository = $accountRepository;
         $this->transactionRepository = $transactionRepository;
+        $this->currencyService = $currencyService;
     }
 
     /**
@@ -48,9 +56,10 @@ class TransactionService
     public function validateTransaction(int $accountId, array $data)
     {
         $rules = [
-            'to' => 'required|integer',
-            'amount' => 'required|integer|min:1',
-            'details' => 'required'
+            'to' => 'required|exists:accounts,id',
+            'amount' => 'required|numeric|min:1',
+            'details' => 'required',
+            'from' => 'required|exists:accounts,id'
         ];
         $validator = Validator::make($data, $rules);
 
@@ -58,37 +67,24 @@ class TransactionService
             throw new ValidationException($validator);
         }
 
-        if ((int)$data['to'] === $accountId) {
-            $validator->errors()->add('to', "You cannot make transaction with yourself");
+        if ((int) $data['to'] === $accountId) {
+            $validator
+                ->errors()
+                ->add('to', "You cannot make transaction with yourself.");
 
             throw new ValidationException($validator);
         }
 
-        $accountFrom = $this->accountRepository->find($accountId);
+        $account = $this->accountRepository->find($accountId);
 
-        if (!$accountFrom) {
-            $validator
-                ->errors()
-                ->add(
-                    'from',
-                    "There is not account with such id( ${accountId})"
-                );
-        }
+        // we store amount in USD, so we need check user currency and transform amount into right units if it needs
+        $amount = $this->currencyService->getAmountInUSD(
+            $account,
+            $data['amount']
+        );
 
-        $accountTo = $this->accountRepository->find($data['to']);
-
-        if (!$accountTo) {
-            $validator
-                ->errors()
-                ->add(
-                    'to',
-                    "There is not account with such id( ${$data['to']})"
-                );
-        }
-
-        // TODO: add currency checking
-        if ($accountFrom && $accountFrom->balance < $data['amount']) {
-            $validator->errors()->add('from', "You don't have enough money");
+        if ($account->balance < $amount) {
+            $validator->errors()->add('from', "You don't have enough money.");
         }
 
         if (count($validator->errors()->all())) {
@@ -109,14 +105,19 @@ class TransactionService
         $transaction = null;
 
         try {
+            $account = $this->accountRepository->find($accountId);
+
+            $data['amount'] = $this->currencyService->getAmountInUSD(
+                $account,
+                $data['amount']
+            );
+
             $this->accountRepository->updateBalance(
                 $accountId,
                 $data['to'],
                 $data['amount']
             );
-            $transaction = $this->transactionRepository->create(
-                array_merge(['from' => $accountId], $data)
-            );
+            $transaction = $this->transactionRepository->create($data);
         } catch (\Exception $e) {
             DB::rollBack();
 

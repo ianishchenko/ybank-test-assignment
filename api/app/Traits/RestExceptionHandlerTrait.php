@@ -38,7 +38,6 @@ trait RestExceptionHandlerTrait
                 $result = $this->modelNotFound($e->getMessage());
                 break;
             default:
-                dd($e);
                 if (!$isProduction) {
                     $message = $e->getMessage();
                     $result = $this->badRequest($message);
