@@ -83,9 +83,9 @@ export default Vue.extend({
       this.setLoading(true);
 
       Promise.all([
-        this.$axios.get(`accounts/${this.id}`).then(({ data: account }) => ({
-          account
-        })),
+        this.$axios.get(`accounts/${this.id}`).then(({ data }) => {
+          this.account = data;
+        }),
         this.$axios.get(`accounts/${this.id}/transactions`).then(({ data }) => {
           this.transactions = data;
         })

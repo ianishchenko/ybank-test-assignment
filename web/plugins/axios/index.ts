@@ -30,7 +30,7 @@ export default function(Vue: Axios, inject?: any): void {
         redirect(`/${status}`);
       }
 
-      return error.response;
+      return Promise.reject(error.response)
     }
   );
 }
@@ -41,7 +41,7 @@ declare module "vue/types/vue" {
   }
 }
 
-declare module '@nuxt/types' {
+declare module "@nuxt/types" {
   interface Context {
     $axios: AxiosInstance;
   }

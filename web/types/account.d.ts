@@ -3,6 +3,8 @@ export default interface Account {
   name: string;
   balance: number;
   currency?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 

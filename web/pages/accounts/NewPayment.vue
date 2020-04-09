@@ -55,6 +55,7 @@
 import Vue, { PropOptions } from "vue";
 
 import Payment from "~/types/payment";
+import Error from "~/types/error";
 
 export default Vue.extend({
   props: {
@@ -84,9 +85,10 @@ export default Vue.extend({
               this.$emit("toggle-show");
               this.$emit("update-data");
             },
-            error => {
+            ({ data: { errors } }) => {
               this.$emit("set-loading", false);
-              // errors handling if it needs in future
+
+              this.errors = errors.map((error: Error) => error.message);
             }
           );
       } else {
