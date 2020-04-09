@@ -18,7 +18,7 @@ Route::get('accounts/{id}', 'AccountController@show');
 
 Route::get('accounts/{id}/transactions', 'AccountController@getRelatedTransactions');
 
-Route::post('accounts/{id}/transactions', 'AccountController@storeTransactions');
+Route::post('accounts/{id}/transactions', 'AccountController@storeTransaction');
 
 Route::get('currencies', function () {
     $account = DB::table('currencies')

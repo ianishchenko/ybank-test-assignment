@@ -58,8 +58,8 @@ class TransactionService
             throw new ValidationException($validator);
         }
 
-        if ($data['to'] === $accountId) {
-            $validator->errors()->add('from', "You cannot specify yourself");
+        if ((int)$data['to'] === $accountId) {
+            $validator->errors()->add('to', "You cannot make transaction with yourself");
 
             throw new ValidationException($validator);
         }
@@ -81,7 +81,7 @@ class TransactionService
             $validator
                 ->errors()
                 ->add(
-                    'from',
+                    'to',
                     "There is not account with such id( ${$data['to']})"
                 );
         }

@@ -67,7 +67,7 @@ class AccountController
      * @return array
      * @throws ValidationException
      */
-    public function storeTransactions(Request $request, int $id): array
+    public function storeTransaction(Request $request, int $id): array
     {
         $data = $request->post();
         $this->transactionService->validateTransaction($id, $data);
