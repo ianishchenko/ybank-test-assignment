@@ -78,10 +78,10 @@ class TransactionService
         $account = $this->accountRepository->find($accountId);
 
         // we store amount in USD, so we need check user currency and transform amount into right units if it needs
-        $amount = $this->currencyService->getAmountInUSD(
+        $amount = $this->currencyService->getAmountInUSDInfo(
             $account,
             $data['amount']
-        );
+        )["value"];
 
         if ($account->balance < $amount) {
             $validator->errors()->add('from', "You don't have enough money.");
@@ -107,10 +107,15 @@ class TransactionService
         try {
             $account = $this->accountRepository->find($accountId);
 
-            $data['amount'] = $this->currencyService->getAmountInUSD(
+            // we store amount in USD, so we need check user currency and transform amount into right units if it needs
+            $amountInfo = $this->currencyService->getAmountInUSDInfo(
                 $account,
                 $data['amount']
             );
+
+            $data['amount'] = $amountInfo['value'];
+            // for correct historical representing
+            $data['current_currency'] = $amountInfo['current_currency'];
 
             $this->accountRepository->updateBalance(
                 $accountId,

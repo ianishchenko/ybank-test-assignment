@@ -15,9 +15,10 @@ class TransactionsTableSeeder extends Seeder
             'from' => 1,
             'to' => 2,
             'details' => 'sample transaction',
-            'amount' => 14,
+            'amount' => 24,
             'created_at' => new DateTime(),
-            'updated_at' => new DateTime()
+            'updated_at' => new DateTime(),
+            'current_currency' => 0.9202171713
         ]);
 
         DB::table('transactions')->insert([
@@ -26,7 +27,8 @@ class TransactionsTableSeeder extends Seeder
             'details' => 'sample transaction 2',
             'amount' => 24,
             'created_at' => new DateTime(),
-            'updated_at' => new DateTime()
+            'updated_at' => new DateTime(),
+            'current_currency' => 0.94
         ]);
 
         DB::table('transactions')->insert([
@@ -35,7 +37,8 @@ class TransactionsTableSeeder extends Seeder
             'details' => 'sample transaction 3',
             'amount' => 15,
             'created_at' => new DateTime(),
-            'updated_at' => new DateTime()
+            'updated_at' => new DateTime(),
+            'current_currency' => 0.9202171713
         ]);
     }
 }

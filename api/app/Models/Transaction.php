@@ -17,5 +17,5 @@ class Transaction extends Model
      *
      * @var array
      */
-    protected $fillable = ['from', 'to', 'amount', 'details'];
+    protected $fillable = ['from', 'to', 'amount', 'details', 'current_currency'];
 }

@@ -7,11 +7,14 @@
         v-on:toggle-show="toggleShow"
         :account="account"
         :currencySign="currencySign"
+        :needConvertMoney="needConvertMoney"
+        :rate="rate"
       />
 
       <new-payment
         v-show="show"
         :accountId="id"
+        :currencySign="currencySign"
         v-on:update-data="updateData"
         v-on:toggle-show="toggleShow"
         v-on:set-loading="setLoading"
@@ -19,8 +22,9 @@
 
       <transactions-list
         :data="transactions"
-        :accountId="account.id"
+        :accountId="id"
         :currencySign="currencySign"
+        :needConvertMoney="needConvertMoney"
       />
     </div>
   </div>
@@ -31,6 +35,8 @@ import Vue from "vue";
 
 import Account from "~/types/account";
 import Transaction from "~/types/transaction";
+import Currency from "~/types/currency";
+import { Currency as CurrencyEnum } from "~/enums/currency";
 
 import AccountInfo from "./AccountInfo.vue";
 import NewPayment from "./NewPayment.vue";
@@ -51,7 +57,8 @@ export default Vue.extend({
       transactions: [] as Array<Transaction>,
       show: false as boolean,
       loading: true as boolean,
-      id: +id as number
+      id: +id as number,
+      currencies: { rates: {} } as Currency
     };
   },
 
@@ -62,16 +69,26 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.$axios.get(`accounts/${this.id}/transactions`).then(({ data }) => {
-      this.transactions = data;
-
-      this.setLoading(false);
-    });
+    Promise.all([
+      this.$axios.get(`accounts/${this.id}/transactions`).then(({ data }) => {
+        this.transactions = data;
+      }),
+      this.$axios.get(`currencies`).then(({ data }) => {
+        this.currencies = data;
+      })
+    ]).finally(() => this.setLoading(false));
   },
 
+  // TODO: need to add logic if new currency type is added
   computed: {
     currencySign(): string {
-      return this.account.currency === "usd" ? "$" : "€";
+      return this.account.currency === CurrencyEnum.USD ? "$" : "€";
+    },
+    needConvertMoney(): boolean {
+      return CurrencyEnum.EUR === this.account.currency;
+    },
+    rate(): number {
+      return this.currencies.rates.EUR;
     }
   },
 
@@ -88,6 +105,9 @@ export default Vue.extend({
         }),
         this.$axios.get(`accounts/${this.id}/transactions`).then(({ data }) => {
           this.transactions = data;
+        }),
+        this.$axios.get(`currencies`).then(({ data }) => {
+          this.currencies = data;
         })
       ]).finally(() => this.setLoading(false));
     },

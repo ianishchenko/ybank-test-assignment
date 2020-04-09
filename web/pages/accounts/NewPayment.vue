@@ -25,7 +25,7 @@
       </b-form-group>
 
       <b-form-group id="input-group-2" label="Amount:" label-for="input-2">
-        <b-input-group prepend="$" size="sm">
+        <b-input-group :prepend="currencySign" size="sm">
           <b-form-input
             id="input-2"
             v-model="payment.amount"
@@ -62,7 +62,11 @@ export default Vue.extend({
     accountId: {
       type: Number,
       required: true
-    } as PropOptions<number>
+    } as PropOptions<number>,
+    currencySign: {
+      type: String,
+      required: true
+    } as PropOptions<string>
   },
 
   data() {

@@ -8,6 +8,18 @@
 import Vue, { PropOptions } from "vue";
 
 import Transaction from "~/types/transaction";
+import { usdToEuro } from "~/helpers/currency";
+
+interface TransactionsListItem {
+  id: number;
+  from: number;
+  to: number;
+  details: string;
+  amount: string;
+  current_currency: number;
+  created_at: string;
+  updated_at: string;
+}
 
 export default Vue.extend({
   props: {
@@ -22,7 +34,11 @@ export default Vue.extend({
     accountId: {
       type: Number,
       required: true
-    } as PropOptions<Number>
+    } as PropOptions<Number>,
+    needConvertMoney: {
+      type: Boolean,
+      default: false
+    } as PropOptions<boolean>
   },
 
   data() {
@@ -32,16 +48,25 @@ export default Vue.extend({
         "from",
         "to",
         "amount",
-        { key: "created_at", label: "Date", formatter: (date: string): string => (new Date(date)).toLocaleString() }
+        "details",
+        {
+          key: "created_at",
+          label: "Date",
+          formatter: (date: string): string => new Date(date).toLocaleString()
+        }
       ]
     };
   },
 
   computed: {
-    items(): Array<Transaction> {
+    items(): Array<TransactionsListItem> {
       return this.data.map(transaction => {
-        const sign: string = this.accountId != transaction.to ? "-" : "";
-        const amount: string = `${sign}${this.currencySign}${transaction.amount}`;
+        const sign: string = this.accountId !== transaction.to ? "-" : "";
+        const balance = this.needConvertMoney
+          ? usdToEuro(transaction.amount, transaction.current_currency)
+          : transaction.amount;
+
+        const amount: string = `${sign}${this.currencySign}${balance}`;
 
         return { ...transaction, amount };
       });

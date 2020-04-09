@@ -6,7 +6,7 @@
       </div>
       <div>
         Balance:
-        <code>{{ currencySign }}{{ account.balance }}</code>
+        <code>{{ balance }}</code>
       </div>
     </b-card-text>
     <b-button size="sm" variant="success" @click="toggleShow"
@@ -20,9 +20,10 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropOptions } from 'vue'
+import Vue, { PropOptions } from "vue";
 
 import Account from "~/types/account";
+import { usdToEuro } from "~/helpers/currency";
 
 export default Vue.extend({
   props: {
@@ -33,11 +34,28 @@ export default Vue.extend({
     currencySign: {
       type: String,
       required: true
-    } as PropOptions<String>
+    } as PropOptions<String>,
+    needConvertMoney: {
+      type: Boolean,
+      default: false
+    } as PropOptions<boolean>,
+    rate: {
+      type: Number,
+      required: true,
+      default: 0
+    } as PropOptions<number>
   },
 
-  data() {
-    return { show: false as boolean };
+  computed: {
+    balance(): string {
+      let balance:number = this.account.balance;
+
+      if (this.needConvertMoney) {
+        balance = usdToEuro(balance, this.rate);
+      }
+
+      return `${this.currencySign}${balance}`;
+    }
   },
 
   methods: {
