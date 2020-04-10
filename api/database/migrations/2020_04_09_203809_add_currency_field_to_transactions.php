@@ -15,7 +15,7 @@ class AddCurrencyFieldToTransactions extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             // due to lack of specification, suppose we have only two types of currency.
-            $table->float('current_currency');
+            $table->float('current_currency')->default(1);
         });
     }
 

@@ -49,11 +49,21 @@ class CurrencyService
      */
     public function getAmountInUSDInfo(Account $account, float $amount): array
     {
-        $currency = $this->getCurrentCurrency()['rates'][self::EURO_SYMBOL];
+        $currency = (float) number_format(
+            $this->getCurrentCurrency()['rates'][self::EURO_SYMBOL],
+            2,
+            '.',
+            ''
+        );
         $result = ["value" => $amount, "current_currency" => $currency];
 
         if ($account->currency == Account::EURO_CURRENCY) {
-            $result["value"] = $amount / $currency;
+            $result["value"] = (float) number_format(
+                $amount / $currency,
+                2,
+                '.',
+                ''
+            );
         }
 
         return $result;
