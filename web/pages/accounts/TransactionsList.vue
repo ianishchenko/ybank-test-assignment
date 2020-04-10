@@ -10,23 +10,12 @@ import Vue, { PropOptions } from "vue";
 import Transaction from "~/types/transaction";
 import { usdToEuro } from "~/helpers/currency";
 
-interface TransactionsListItem {
-  id: number;
-  from: number;
-  to: number;
-  details: string;
-  amount: string;
-  current_currency: number;
-  created_at: string;
-  updated_at: string;
-}
-
 export default Vue.extend({
   props: {
     data: {
       type: Array,
       default: []
-    } as PropOptions<Array<Transaction>>,
+    } as PropOptions<Array<Transaction<number>>>,
     currencySign: {
       type: String,
       required: true
@@ -59,7 +48,7 @@ export default Vue.extend({
   },
 
   computed: {
-    items(): Array<TransactionsListItem> {
+    items(): Array<Transaction<string>> {
       return this.data.map(transaction => {
         const sign: string = this.accountId !== transaction.to ? "-" : "";
         const balance = this.needConvertMoney
